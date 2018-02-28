@@ -1,9 +1,23 @@
-import expect from 'expect'
+import expect from "expect";
 
-import message from 'src/index'
+import graphqlPath from "src/index";
 
-describe('Module template', () => {
-  it('displays a welcome message', () => {
-    expect(message).toContain('Welcome to graphql-path')
-  })
-})
+describe("graphqlPath", () => {
+  it("returns a map of paths in a graphql query", () => {
+    expect(graphqlPath`
+      query FooQuery {
+        ${"somethingOnRoot"}
+        someResource {
+          ${"onSomeResource"}
+          anotherField {
+            ${"onAnotherField"}
+          }
+        }
+      }
+    `).toEqual({
+      somethingOnRoot: "",
+      onSomeResource: "someResource",
+      onAnotherField: "someResource.anotherField"
+    });
+  });
+});
