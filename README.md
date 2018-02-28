@@ -5,8 +5,8 @@
 
 Describe graphql-path here.
 
-[build-badge]: https://img.shields.io/travis/user/repo/master.png?style=flat-square
-[build]: https://travis-ci.org/user/repo
+[build-badge]: https://circleci.com/gh/brysgo/graphql-path.svg?style=svg
+[build]: https://circleci.com/gh/brysgo/graphql-path
 
 [npm-badge]: https://img.shields.io/npm/v/graphql-path.png?style=flat-square
 [npm]: https://www.npmjs.org/package/graphql-path
