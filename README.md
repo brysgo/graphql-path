@@ -3,7 +3,7 @@
 [![CircleCI][build-badge]][build]
 [![npm package][npm-badge]][npm]
 
-Describe graphql-path here.
+Don't use this yet, API will likely change.
 
 [build-badge]: https://circleci.com/gh/brysgo/graphql-path.svg?style=svg
 [build]: https://circleci.com/gh/brysgo/graphql-path
