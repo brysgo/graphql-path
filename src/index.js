@@ -1,17 +1,35 @@
 import { visit } from "graphql/language/visitor";
-import gql from "graphql-tag";
+import parseGraphql from "graphql-tag";
 
 export default (graphqlStrings, ...pathNames) => {
-  const result = {};
+  const result = {
+    fragmentPaths: {}
+  };
+  const fragmentNames = new Map();
   const prefix = "graphqlPathPrefix_";
-  const prefixedNames = pathNames.map(pathName => prefix + pathName);
+  const stringPathNames = pathNames.filter(pathName => {
+    const isString = typeof pathName === "string";
+    if (!isString && !!pathName) {
+      visit(pathName, {
+        FragmentDefinition: {
+          enter(node, key, parent, path, ancestors) {
+            const fragmentName = node.name.value;
+            fragmentNames.set(pathName, fragmentName);
+          }
+        }
+      });
+    }
+    return isString;
+  });
+  const prefixedNames = stringPathNames.map(pathName => prefix + pathName);
   const wholeQuery = String.raw(graphqlStrings, ...prefixedNames);
-  const parsedQuery = gql([wholeQuery]);
+  const parsedQuery = parseGraphql([wholeQuery]);
   result.parsedQuery = parsedQuery;
+  result.fragmentNames = fragmentNames;
 
-  const convertToStringPath = graphqlPath => {
+  const convertToStringPath = path => {
     const res = [];
-    graphqlPath.reduce(
+    path.reduce(
       (acc, p) => (acc.kind === "Field" && res.push(acc.name.value), acc[p]),
       parsedQuery
     );
@@ -23,16 +41,16 @@ export default (graphqlStrings, ...pathNames) => {
       enter(node, key, parent, path, ancestors) {
         const fieldName = node.name.value;
         if (fieldName.indexOf(prefix) === 0) {
-          result[fieldName.slice(prefix.length)] = convertToStringPath(
-            path
-          ).join(".");
+          result.fragmentPaths[
+            fieldName.slice(prefix.length)
+          ] = convertToStringPath(path).join(".");
         }
       }
     },
     FragmentSpread: {
       enter(node, key, parent, path, ancestors) {
         const fieldName = node.name.value;
-        result[fieldName] = convertToStringPath(path).join(".");
+        result.fragmentPaths[fieldName] = convertToStringPath(path).join(".");
       }
     }
   });

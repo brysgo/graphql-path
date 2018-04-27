@@ -1,9 +1,14 @@
 import expect from "expect";
-import graphqlPath from "src/index";
+import gql from "src/index";
 
 describe("graphqlPath", () => {
   it("returns a map of paths in a graphql query", () => {
-    expect(graphqlPath`
+    const { parsedQuery: fooFragment } = gql`
+      fragment Foo on Bar {
+        blah
+      }
+    `;
+    const { parsedQuery, fragmentNames, fragmentPaths } = gql`
       query FooQuery {
         ${"somethingOnRoot"}
         someResource {
@@ -15,10 +20,11 @@ describe("graphqlPath", () => {
         }
       }
 
-      fragment Foo on Bar {
-        blah
-      }
-    `).toEqual({
+      ${fooFragment}
+    `;
+    expect(parsedQuery).toExist();
+    expect(fragmentNames.get(fooFragment)).toEqual("Foo");
+    expect(fragmentPaths).toEqual({
       somethingOnRoot: "",
       onSomeResource: "someResource",
       onAnotherField: "someResource.anotherField",
