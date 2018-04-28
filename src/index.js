@@ -21,6 +21,8 @@ export default (graphqlStrings, ...pathNames) => {
           }
         }
       });
+    } else if (!pathName) {
+      throw new Error("Uh oh, your fragment was undefined!");
     } else {
       unwrappedPathNames.push(pathName);
     }
