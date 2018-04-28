@@ -7,10 +7,13 @@ export default (graphqlStrings, ...pathNames) => {
   };
   const fragmentNames = new Map();
   const prefix = "graphqlPathPrefix_";
+  const unwrappedPathNames = [];
   const stringPathNames = pathNames.filter(pathName => {
     const isString = typeof pathName === "string";
     if (!isString && !!pathName) {
-      visit(pathName, {
+      const unwrappedPathName = pathName.parsedQuery || pathName;
+      unwrappedPathNames.push(unwrappedPathName);
+      visit(unwrappedPathName, {
         FragmentDefinition: {
           enter(node, key, parent, path, ancestors) {
             const fragmentName = node.name.value;
@@ -18,13 +21,15 @@ export default (graphqlStrings, ...pathNames) => {
           }
         }
       });
+    } else {
+      unwrappedPathNames.push(pathName);
     }
     return isString;
   });
   const prefixedNames = stringPathNames.map(pathName => prefix + pathName);
   const wholeQuery = String.raw(graphqlStrings, ...prefixedNames);
   const parsedQuery = parseGraphql([wholeQuery]);
-  result.parsedQuery = parseGraphql(graphqlStrings, ...pathNames);
+  result.parsedQuery = parseGraphql(graphqlStrings, ...unwrappedPathNames);
   result.fragmentNames = fragmentNames;
 
   const convertToStringPath = path => {

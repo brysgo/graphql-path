@@ -4,7 +4,7 @@ import { print } from "graphql/language";
 
 describe("graphqlPath", () => {
   it("returns a map of paths in a graphql query", () => {
-    const { parsedQuery: fooFragment } = gql`
+    const fooFragment = gql`
       fragment Foo on Bar {
         blah
       }
