@@ -32,4 +32,34 @@ describe("graphqlPath", () => {
       Foo: "someResource.anotherField"
     });
   });
+
+  it("also supports graphql tag result for fragments", () => {
+    const { parsedQuery: fooFragment } = gql`
+      fragment Foo on Bar {
+        blah
+      }
+    `;
+    const { parsedQuery, fragmentNames, fragmentPaths } = gql`
+      query FooQuery {
+        ${"somethingOnRoot"}
+        someResource {
+          ${"onSomeResource"}
+          anotherField {
+            ${"onAnotherField"}
+            ...Foo
+          }
+        }
+      }
+
+      ${fooFragment}
+    `;
+    expect(print(parsedQuery)).toMatchSnapshot();
+    expect(fragmentNames.get(fooFragment)).toEqual("Foo");
+    expect(fragmentPaths).toEqual({
+      somethingOnRoot: "",
+      onSomeResource: "someResource",
+      onAnotherField: "someResource.anotherField",
+      Foo: "someResource.anotherField"
+    });
+  });
 });

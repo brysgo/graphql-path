@@ -1,5 +1,23 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`graphqlPath also supports graphql tag result for fragments 1`] = `
+"query FooQuery {
+  somethingOnRoot
+  someResource {
+    onSomeResource
+    anotherField {
+      onAnotherField
+      ...Foo
+    }
+  }
+}
+
+fragment Foo on Bar {
+  blah
+}
+"
+`;
+
 exports[`graphqlPath returns a map of paths in a graphql query 1`] = `
 "query FooQuery {
   somethingOnRoot
