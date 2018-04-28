@@ -24,7 +24,7 @@ export default (graphqlStrings, ...pathNames) => {
   const prefixedNames = stringPathNames.map(pathName => prefix + pathName);
   const wholeQuery = String.raw(graphqlStrings, ...prefixedNames);
   const parsedQuery = parseGraphql([wholeQuery]);
-  result.parsedQuery = parsedQuery;
+  result.parsedQuery = parseGraphql(graphqlStrings, ...pathNames);
   result.fragmentNames = fragmentNames;
 
   const convertToStringPath = path => {

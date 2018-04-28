@@ -1,5 +1,6 @@
-import expect from "expect";
-import gql from "src/index";
+import gql from "./";
+import { print } from "graphql/language";
+
 
 describe("graphqlPath", () => {
   it("returns a map of paths in a graphql query", () => {
@@ -22,7 +23,7 @@ describe("graphqlPath", () => {
 
       ${fooFragment}
     `;
-    expect(parsedQuery).toExist();
+    expect(print(parsedQuery)).toMatchSnapshot();
     expect(fragmentNames.get(fooFragment)).toEqual("Foo");
     expect(fragmentPaths).toEqual({
       somethingOnRoot: "",
