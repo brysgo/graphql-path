@@ -1,10 +1,14 @@
 {
   "name": "graphql-path",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Describe graphql-path here",
   "main": "lib/index.js",
   "module": "es/index.js",
-  "files": ["es", "lib", "umd"],
+  "files": [
+    "es",
+    "lib",
+    "umd"
+  ],
   "scripts": {
     "build": "nwb build-web-module",
     "clean": "nwb clean-module",
