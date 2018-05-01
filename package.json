@@ -12,7 +12,8 @@
   "scripts": {
     "build": "nwb build-web-module",
     "clean": "nwb clean-module",
-    "test": "jest --config jest.config.js --no-cache"
+    "test": "jest --config jest.config.js --no-cache",
+    "prepublishOnly": "yarn build"
   },
   "dependencies": {
     "graphql": "^0.13.1",
