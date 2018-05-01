@@ -1,66 +1,130 @@
 import { visit } from "graphql/language/visitor";
 import parseGraphql from "graphql-tag";
 
-export default (graphqlStrings, ...pathNames) => {
-  const result = {
-    fragmentPaths: {}
-  };
-  const fragmentNames = new Map();
-  const prefix = "graphqlPathPrefix_";
-  const unwrappedPathNames = [];
-  const stringPathNames = pathNames.filter(pathName => {
-    const isString = typeof pathName === "string";
-    if (!isString && !!pathName) {
-      const unwrappedPathName = pathName.parsedQuery || pathName;
-      unwrappedPathNames.push(unwrappedPathName);
-      visit(unwrappedPathName, {
-        FragmentDefinition: {
-          enter(node, key, parent, path, ancestors) {
-            const fragmentName = node.name.value;
-            fragmentNames.set(pathName, fragmentName);
+function getFragmentNames(
+  wrappedInterpolations,
+  { andResolveRelativePaths: fragmentPaths }
+) {
+  const result = new Map();
+  for (const wi of wrappedInterpolations) {
+    if ("stringPlaceholder" in wi) continue;
+    const transposedFragmentNames = {};
+    (wi.fragmentNames || []).forEach(
+      (v, k) => (transposedFragmentNames[v] = k)
+    );
+    const directFragmentDefinitions = [];
+    const fromChildrenFragmentNames = [];
+    visit(wi.parsedQuery, {
+      FragmentDefinition: {
+        enter(node, key, parent, path, ancestors) {
+          const fragmentName = node.name.value;
+          const childRef = transposedFragmentNames[fragmentName];
+          if (childRef) {
+            result.set(childRef, fragmentName);
+            fragmentPaths[fragmentName] = wi.fragmentPaths[fragmentName];
+            fromChildrenFragmentNames.push(fragmentName);
+          } else {
+            if (wi.directlyWrapped) {
+              result.set(wi, fragmentName);
+            } else {
+              result.set(wi.parsedQuery, fragmentName);
+            }
+            directFragmentDefinitions.push(fragmentName);
           }
         }
-      });
-    } else if (!pathName) {
-      throw new Error("Uh oh, your fragment was undefined!");
-    } else {
-      unwrappedPathNames.push(pathName);
+      }
+    });
+    if (directFragmentDefinitions.length > 1) {
+      throw new Error(`
+        If you define more than one fragment in the same string, you will not
+        be able to compose the fragment.
+
+        This error may also be because you are composing fragments with
+        "graphql-tag" instead of "graphql-path"
+      `);
     }
-    return isString;
-  });
-  const prefixedNames = stringPathNames.map(pathName => prefix + pathName);
-  const wholeQuery = String.raw(graphqlStrings, ...prefixedNames);
-  const parsedQuery = parseGraphql([wholeQuery]);
-  result.parsedQuery = parseGraphql(graphqlStrings, ...unwrappedPathNames);
-  result.fragmentNames = fragmentNames;
+    const [directFragmentName] = directFragmentDefinitions;
+    for (const childFragmentName of fromChildrenFragmentNames) {
+      fragmentPaths[childFragmentName] = [
+        fragmentPaths[directFragmentName],
+        fragmentPaths[childFragmentName]
+      ]
+        .filter(s => s !== "")
+        .join(".");
+    }
+  }
+  return result;
+}
+
+function wrap(interpolatable, options = {}) {
+  const isString = typeof interpolatable === "string";
+  if (isString) {
+    return {
+      stringPlaceholder: interpolatable,
+      ...options
+    };
+  } else {
+    if (!interpolatable) {
+      throw new Error("Uh oh, your fragment was undefined!");
+    }
+    if (interpolatable.parsedQuery) {
+      return interpolatable;
+    } else {
+      return {
+        parsedQuery: interpolatable,
+        ...options
+      };
+    }
+  }
+}
+
+export default (graphqlStrings, ...interpolations) => {
+  const wrappedInterpolations = interpolations.map(wrap);
+  const prefix = "graphqlPathPrefix_";
+  const unwrappedPathNames = [];
+  const stringPathNames = interpolations.filter(i => typeof i === "string");
+  const prefixedNames = stringPathNames.map(s => prefix + s);
+  const queryWithTags = String.raw(graphqlStrings, ...prefixedNames);
+  const parsedQueryWithPlaceholders = parseGraphql([queryWithTags]);
+  const parsedQuery = parseGraphql(
+    graphqlStrings,
+    ...wrappedInterpolations.map(wi => wi.parsedQuery || wi.stringPlaceholder)
+  );
 
   const convertToStringPath = path => {
     const res = [];
     path.reduce(
       (acc, p) => (acc.kind === "Field" && res.push(acc.name.value), acc[p]),
-      parsedQuery
+      parsedQueryWithPlaceholders
     );
     return res;
   };
 
-  visit(parsedQuery, {
+  const fragmentPaths = {};
+  visit(parsedQueryWithPlaceholders, {
     Field: {
       enter(node, key, parent, path, ancestors) {
         const fieldName = node.name.value;
         if (fieldName.indexOf(prefix) === 0) {
-          result.fragmentPaths[
-            fieldName.slice(prefix.length)
-          ] = convertToStringPath(path).join(".");
+          fragmentPaths[fieldName.slice(prefix.length)] = convertToStringPath(
+            path
+          ).join(".");
         }
       }
     },
     FragmentSpread: {
       enter(node, key, parent, path, ancestors) {
         const fieldName = node.name.value;
-        result.fragmentPaths[fieldName] = convertToStringPath(path).join(".");
+        fragmentPaths[fieldName] = convertToStringPath(path).join(".");
       }
     }
   });
-
-  return result;
+  const fragmentNames = getFragmentNames(wrappedInterpolations, {
+    andResolveRelativePaths: fragmentPaths
+  });
+  return wrap(parsedQuery, {
+    fragmentNames,
+    fragmentPaths,
+    directlyWrapped: true
+  });
 };

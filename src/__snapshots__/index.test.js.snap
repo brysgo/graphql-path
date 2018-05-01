@@ -35,3 +35,26 @@ fragment Foo on Bar {
 }
 "
 `;
+
+exports[`graphqlPath works with nested fragments 1`] = `
+"query FooQuery {
+  ...Base
+}
+
+fragment Base on Query {
+  someResource {
+    ...Child
+  }
+}
+
+fragment Child on Base {
+  anotherField {
+    ...SubChild
+  }
+}
+
+fragment SubChild on Child {
+  blah
+}
+"
+`;
