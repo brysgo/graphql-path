@@ -1,6 +1,14 @@
 import { visit } from "graphql/language/visitor";
 import parseGraphql from "graphql-tag";
 
+const prefix = "graphqlPathPrefix_";
+
+function isValidGraphQLIdentifier(name) {
+  // Regex taken from graphql-js
+  const NAME_RX = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
+  return NAME_RX.test(name);
+}
+
 function getFragmentNames(
   wrappedInterpolations,
   { andResolveRelativePaths: fragmentPaths }
@@ -58,7 +66,7 @@ function getFragmentNames(
 
 function wrap(interpolatable, options = {}) {
   const isString = typeof interpolatable === "string";
-  if (isString) {
+  if (isString && isValidGraphQLIdentifier(prefix + interpolatable)) {
     return {
       stringPlaceholder: interpolatable,
       ...options
@@ -66,6 +74,9 @@ function wrap(interpolatable, options = {}) {
   } else {
     if (!interpolatable) {
       throw new Error("Uh oh, your fragment was undefined!");
+    }
+    if (isString) {
+      interpolatable = parseGraphql([interpolatable]);
     }
     if (interpolatable.parsedQuery) {
       return interpolatable;
@@ -80,9 +91,10 @@ function wrap(interpolatable, options = {}) {
 
 export default (graphqlStrings, ...interpolations) => {
   const wrappedInterpolations = interpolations.map(wrap);
-  const prefix = "graphqlPathPrefix_";
   const unwrappedPathNames = [];
-  const stringPathNames = interpolations.filter(i => typeof i === "string");
+  const stringPathNames = interpolations.filter(
+    i => typeof i === "string" && isValidGraphQLIdentifier(prefix + i)
+  );
   const prefixedNames = stringPathNames.map(s => prefix + s);
   const queryWithTags = String.raw(graphqlStrings, ...prefixedNames);
   const parsedQueryWithPlaceholders = parseGraphql([queryWithTags]);

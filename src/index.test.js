@@ -62,6 +62,25 @@ describe("graphqlPath", () => {
     });
   });
 
+  it("doesn't try to get the path of invalid strings", () => {
+    const unparsedFragment = `
+      fragment UnparsedFragment on Query {
+        hello
+      }
+    `;
+    const { parsedQuery, fragmentNames, fragmentPaths } = gql`
+      query FooQuery {
+        ...UndefinedFragment
+      }
+      ${unparsedFragment}
+    `;
+    expect(print(parsedQuery)).toMatchSnapshot();
+    expect(fragmentNames.get(unparsedFragment)).toEqual();
+    expect(fragmentPaths).toEqual({
+      UndefinedFragment: ""
+    });
+  });
+
   it("works with nested fragments", () => {
     const subChildFragment = gql`
       fragment SubChild on Child {
@@ -97,7 +116,7 @@ describe("graphqlPath", () => {
     expect(fragmentPaths).toEqual({
       Base: "",
       Child: "someResource",
-      SubChild: "someResource.anotherField",
+      SubChild: "someResource.anotherField"
     });
   });
 });
