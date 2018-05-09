@@ -1,6 +1,6 @@
 {
   "name": "graphql-path",
-  "version": "2.0.5",
+  "version": "3.0.0",
   "description": "Describe graphql-path here",
   "main": "lib/index.js",
   "module": "es/index.js",
