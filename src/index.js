@@ -66,7 +66,7 @@ function getFragmentNames(
 
 function wrap(interpolatable, options = {}) {
   const isString = typeof interpolatable === "string";
-  if (isString && isValidGraphQLIdentifier(prefix + interpolatable)) {
+  if (isString) {
     return {
       stringPlaceholder: interpolatable,
       ...options
@@ -74,9 +74,6 @@ function wrap(interpolatable, options = {}) {
   } else {
     if (!interpolatable) {
       throw new Error("Uh oh, your fragment was undefined!");
-    }
-    if (isString) {
-      interpolatable = parseGraphql([interpolatable]);
     }
     if (interpolatable.parsedQuery) {
       return interpolatable;

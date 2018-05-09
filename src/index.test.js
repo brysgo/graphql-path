@@ -68,9 +68,15 @@ describe("graphqlPath", () => {
         hello
       }
     `;
+    const invalidGraphql = `
+      foo
+      bar
+      baz
+    `
     const { parsedQuery, fragmentNames, fragmentPaths } = gql`
       query FooQuery {
         ...UndefinedFragment
+        ${invalidGraphql}
       }
       ${unparsedFragment}
     `;
