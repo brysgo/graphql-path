@@ -1,14 +1,6 @@
 import { visit } from "graphql/language/visitor";
 import parseGraphql from "graphql-tag";
 
-const prefix = "graphqlPathPrefix_";
-
-function isValidGraphQLIdentifier(name) {
-  // Regex taken from graphql-js
-  const NAME_RX = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
-  return NAME_RX.test(name);
-}
-
 function getFragmentNames(
   wrappedInterpolations,
   { andResolveRelativePaths: fragmentPaths }
@@ -88,13 +80,6 @@ function wrap(interpolatable, options = {}) {
 
 export default (graphqlStrings, ...interpolations) => {
   const wrappedInterpolations = interpolations.map(wrap);
-  const unwrappedPathNames = [];
-  const stringPathNames = interpolations.filter(
-    i => typeof i === "string" && isValidGraphQLIdentifier(prefix + i)
-  );
-  const prefixedNames = stringPathNames.map(s => prefix + s);
-  const queryWithTags = String.raw(graphqlStrings, ...prefixedNames);
-  const parsedQueryWithPlaceholders = parseGraphql([queryWithTags]);
   const parsedQuery = parseGraphql(
     graphqlStrings,
     ...wrappedInterpolations.map(wi => wi.parsedQuery || wi.stringPlaceholder)
@@ -104,23 +89,13 @@ export default (graphqlStrings, ...interpolations) => {
     const res = [];
     path.reduce(
       (acc, p) => (acc.kind === "Field" && res.push(acc.name.value), acc[p]),
-      parsedQueryWithPlaceholders
+      parsedQuery
     );
     return res;
   };
 
   const fragmentPaths = {};
-  visit(parsedQueryWithPlaceholders, {
-    Field: {
-      enter(node, key, parent, path, ancestors) {
-        const fieldName = node.name.value;
-        if (fieldName.indexOf(prefix) === 0) {
-          fragmentPaths[fieldName.slice(prefix.length)] = convertToStringPath(
-            path
-          ).join(".");
-        }
-      }
-    },
+  visit(parsedQuery, {
     FragmentSpread: {
       enter(node, key, parent, path, ancestors) {
         const fieldName = node.name.value;

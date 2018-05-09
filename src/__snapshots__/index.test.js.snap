@@ -21,9 +21,11 @@ fragment Foo on Bar {
 exports[`graphqlPath doesn't try to get the path of invalid strings 1`] = `
 "query FooQuery {
   ...UndefinedFragment
-  foo
-  bar
-  baz
+  invalidWithoutInterpolated {
+    foo
+    bar
+    baz
+  }
 }
 
 fragment UnparsedFragment on Query {

@@ -25,9 +25,6 @@ describe("graphqlPath", () => {
     expect(print(parsedQuery)).toMatchSnapshot();
     expect(fragmentNames.get(fooFragment)).toEqual("Foo");
     expect(fragmentPaths).toEqual({
-      somethingOnRoot: "",
-      onSomeResource: "someResource",
-      onAnotherField: "someResource.anotherField",
       Foo: "someResource.anotherField"
     });
   });
@@ -55,9 +52,6 @@ describe("graphqlPath", () => {
     expect(print(parsedQuery)).toMatchSnapshot();
     expect(fragmentNames.get(fooFragment)).toEqual("Foo");
     expect(fragmentPaths).toEqual({
-      somethingOnRoot: "",
-      onSomeResource: "someResource",
-      onAnotherField: "someResource.anotherField",
       Foo: "someResource.anotherField"
     });
   });
@@ -76,7 +70,9 @@ describe("graphqlPath", () => {
     const { parsedQuery, fragmentNames, fragmentPaths } = gql`
       query FooQuery {
         ...UndefinedFragment
-        ${invalidGraphql}
+        invalidWithoutInterpolated {
+          ${invalidGraphql}
+        }
       }
       ${unparsedFragment}
     `;
