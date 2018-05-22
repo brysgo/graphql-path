@@ -106,9 +106,9 @@ export default (graphqlStrings, ...interpolations) => {
   const fragmentNames = getFragmentNames(wrappedInterpolations, {
     andResolveRelativePaths: fragmentPaths
   });
-  return wrap(parsedQuery, {
+  return Object.assign({}, parsedQuery, wrap(parsedQuery, {
     fragmentNames,
     fragmentPaths,
     directlyWrapped: true
-  });
+  }));
 };

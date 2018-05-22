@@ -66,7 +66,7 @@ describe("graphqlPath", () => {
       foo
       bar
       baz
-    `
+    `;
     const { parsedQuery, fragmentNames, fragmentPaths } = gql`
       query FooQuery {
         ...UndefinedFragment
@@ -120,5 +120,37 @@ describe("graphqlPath", () => {
       Child: "someResource",
       SubChild: "someResource.anotherField"
     });
+  });
+
+  it("is itself a valid graphql document", () => {
+    const subChildFragment = gql`
+      fragment SubChild on Child {
+        blah
+      }
+    `;
+    const childFragment = gql`
+      fragment Child on Base {
+        anotherField {
+          ...SubChild
+        }
+      }
+      ${subChildFragment}
+    `;
+    const baseFragment = gql`
+      fragment Base on Query {
+        someResource {
+          ...Child
+        }
+      }
+      ${childFragment}
+    `;
+    const query = gql`
+      query FooQuery {
+        ...Base
+      }
+      ${baseFragment}
+    `;
+
+    expect(print(query)).toMatchSnapshot();
   });
 });

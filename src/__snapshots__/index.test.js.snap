@@ -34,6 +34,29 @@ fragment UnparsedFragment on Query {
 "
 `;
 
+exports[`graphqlPath is itself a valid graphql document 1`] = `
+"query FooQuery {
+  ...Base
+}
+
+fragment Base on Query {
+  someResource {
+    ...Child
+  }
+}
+
+fragment Child on Base {
+  anotherField {
+    ...SubChild
+  }
+}
+
+fragment SubChild on Child {
+  blah
+}
+"
+`;
+
 exports[`graphqlPath returns a map of paths in a graphql query 1`] = `
 "query FooQuery {
   somethingOnRoot
