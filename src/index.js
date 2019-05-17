@@ -1,6 +1,7 @@
 import { visit } from "graphql/language/visitor";
 import parseGraphql from "graphql-tag";
 
+
 function getFragmentNames(
   wrappedInterpolations,
   { andResolveRelativePaths: fragmentPaths }
