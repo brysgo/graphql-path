@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "graphql": "^14.4.2",
-    "graphql-tag": "^2.9.2"
+    "graphql-tag": "^2.10.2"
   },
   "devDependencies": {
     "@babel/core": "^7.5.5",
