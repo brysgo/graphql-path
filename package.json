@@ -19,7 +19,7 @@
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
-    "graphql": "^14.4.2",
+    "graphql": "^15.0.0",
     "graphql-tag": "^2.9.2"
   },
   "devDependencies": {
