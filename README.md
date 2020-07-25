@@ -1,8 +1,6 @@
 # graphql-path
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/brysgo/graphql-path.svg)](https://greenkeeper.io/)
-
-[![CircleCI][build-badge]][build]
+![CI](https://github.com/brysgo/graphql-path/workflows/CI/badge.svg)
 [![npm package][npm-badge]][npm]
 
 [build-badge]: https://circleci.com/gh/brysgo/graphql-path.svg?style=svg
