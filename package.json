@@ -1,6 +1,6 @@
 {
   "name": "graphql-path",
-  "version": "3.1.5",
+  "version": "3.1.6",
   "description": "Get a list of paths to fragments in graphql queries",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
